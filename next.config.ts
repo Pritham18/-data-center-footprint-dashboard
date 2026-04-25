@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === "development";
+
+// Next.js requires 'unsafe-inline' in script-src for React hydration and inline scripts.
+// 'unsafe-eval' is only needed in dev (React uses eval for enhanced error stacks).
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
@@ -10,13 +14,14 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      // Leaflet requires unsafe-inline for its DivIcon styles
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
-      // OpenStreetMap tiles
-      "img-src 'self' data: https://*.tile.openstreetmap.org",
+      "img-src 'self' blob: data: https://*.tile.openstreetmap.org",
       "connect-src 'self' https://*.tile.openstreetmap.org",
       "font-src 'self'",
-      "script-src 'self' 'unsafe-eval'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
       "frame-ancestors 'none'",
     ].join("; "),
   },
